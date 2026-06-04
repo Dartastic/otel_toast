@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_toast_suppression.dart';
 
@@ -58,54 +57,72 @@ Future<T> tracedToast<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_toast');
   final span = t.startSpan('toast $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'toast');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'toast')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.restaurantGuid != null) {
-        span.setStringAttribute('toast.restaurant.guid', res.restaurantGuid!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('toast.restaurant.guid', res.restaurantGuid!)
+        ]));
       }
       if (res.locationName != null) {
-        span.setStringAttribute('toast.location.name', res.locationName!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.location.name', res.locationName!)]));
       }
       if (res.orderGuid != null) {
-        span.setStringAttribute('toast.order.guid', res.orderGuid!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.order.guid', res.orderGuid!)]));
       }
       if (res.orderNumber != null) {
-        span.setStringAttribute('toast.order.number', res.orderNumber!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.order.number', res.orderNumber!)]));
       }
       if (res.checkGuid != null) {
-        span.setStringAttribute('toast.check.guid', res.checkGuid!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.check.guid', res.checkGuid!)]));
       }
       if (res.employeeGuid != null) {
-        span.setStringAttribute('toast.employee.guid', res.employeeGuid!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.employee.guid', res.employeeGuid!)]));
       }
       if (res.serviceArea != null) {
-        span.setStringAttribute('toast.service_area', res.serviceArea!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.service_area', res.serviceArea!)]));
       }
       if (res.menuItemGuid != null) {
-        span.setStringAttribute('toast.menu_item.guid', res.menuItemGuid!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.menu_item.guid', res.menuItemGuid!)]));
       }
       if (res.diningOptionType != null) {
-        span.setStringAttribute('toast.dining_option', res.diningOptionType!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('toast.dining_option', res.diningOptionType!)
+        ]));
       }
       if (res.amount != null) {
-        span.setDoubleAttribute('toast.amount', res.amount!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeDouble('toast.amount', res.amount!)]));
       }
       if (res.currency != null) {
-        span.setStringAttribute('toast.currency', res.currency!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.currency', res.currency!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('toast.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('toast.error.code', res.errorCode!)]));
       }
       final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-            ErrorResource.errorType.key, res.errorCode ?? 'toast.error');
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+              ErrorResource.errorType.key, res.errorCode ?? 'toast.error')
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
