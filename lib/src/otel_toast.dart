@@ -1,11 +1,12 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_toast_suppression.dart';
 
 class ToastResult {
+  /// Creates a result.
   const ToastResult({
     this.restaurantGuid,
     this.locationName,
@@ -39,8 +40,13 @@ class ToastResult {
   final String? errorMessage;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class ToastCallResult<T> {
+  /// Creates a call result.
   const ToastCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final ToastResult? result;
 }
@@ -48,80 +54,84 @@ class ToastCallResult<T> {
 Future<T> tracedToast<T>({
   required String operation,
   required Future<ToastCallResult<T>> Function() invoke,
-  Tracer? tracer,
+  APITracer? tracer,
 }) async {
   if (toastInstrumentationSuppressed()) {
     final r = await invoke();
     return r.value;
   }
-  final t = tracer ?? OTel.tracerProvider().getTracer('otel_toast');
+  final t = tracer ?? OTelAPI.tracerProvider().getTracer('otel_toast');
   final span = t.startSpan('toast $operation', kind: SpanKind.client);
   try {
     span.addAttributes(
-        OTel.attributes([OTel.attributeString('rpc.system', 'toast')]));
+        OTelAPI.attributes([OTelAPI.attributeString('rpc.system', 'toast')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.restaurantGuid != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('toast.restaurant.guid', res.restaurantGuid!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('toast.restaurant.guid', res.restaurantGuid!)
         ]));
       }
       if (res.locationName != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.location.name', res.locationName!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('toast.location.name', res.locationName!)
+        ]));
       }
       if (res.orderGuid != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.order.guid', res.orderGuid!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.order.guid', res.orderGuid!)]));
       }
       if (res.orderNumber != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.order.number', res.orderNumber!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.order.number', res.orderNumber!)]));
       }
       if (res.checkGuid != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.check.guid', res.checkGuid!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.check.guid', res.checkGuid!)]));
       }
       if (res.employeeGuid != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.employee.guid', res.employeeGuid!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('toast.employee.guid', res.employeeGuid!)
+        ]));
       }
       if (res.serviceArea != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.service_area', res.serviceArea!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.service_area', res.serviceArea!)]));
       }
       if (res.menuItemGuid != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.menu_item.guid', res.menuItemGuid!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('toast.menu_item.guid', res.menuItemGuid!)
+        ]));
       }
       if (res.diningOptionType != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('toast.dining_option', res.diningOptionType!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('toast.dining_option', res.diningOptionType!)
         ]));
       }
       if (res.amount != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeDouble('toast.amount', res.amount!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeDouble('toast.amount', res.amount!)]));
       }
       if (res.currency != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.currency', res.currency!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.currency', res.currency!)]));
       }
       if (res.statusCode != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeInt('http.response.status_code', res.statusCode!)
+        ]));
       }
       if (res.errorCode != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('toast.error.code', res.errorCode!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('toast.error.code', res.errorCode!)]));
       }
       final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString(
-              ErrorResource.errorType.key, res.errorCode ?? 'toast.error')
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString(
+              ErrorAttributes.errorType.key, res.errorCode ?? 'toast.error')
         ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
